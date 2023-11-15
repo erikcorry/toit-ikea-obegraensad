@@ -36,6 +36,11 @@ class Driver extends AbstractDriver:
 
   commit l t r b -> none:
     if spi_:
+      // It's a bit unclear if this works.  The hardware may
+      // not conform to the SPI standard.  We assume that the
+      // using the latch pin as chip select will do the right
+      // thing here, but it might be necessary to flip the
+      // latch pin manually.
       spi_.write buffer_
       return
     for offset := 0; offset < 32; offset += 16:

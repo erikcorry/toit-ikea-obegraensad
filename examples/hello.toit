@@ -20,11 +20,19 @@ MSG ::= "Hello, world!"
 main:
   sans10 := Font.get "sans10"
   //bus := spi.Bus --clock=(gpio.Pin CLOCK) --mosi=(gpio.Pin DATA)
+  // Guess a low frequency will work, but how fast can the chip
+  // actually go?
   //device := bus.device --cs=(gpio.Pin LATCH) --frequency=20_000
+  // This might work.  TODO: We need to pull the enable pin low
+  // to activate the chip.
   //driver := ikea.Driver device
+  // For now we use a null driver which just writes pixels to the
+  // console.  Test with `jag run -d host examples/hello.toit`.
   driver := ikea.Driver
   display := TwoColorPixelDisplay driver
   display.background=BLACK
+
+  // If it is rotated wrong, experiment with --landscape and --inverted.
   context := (display.context --no-landscape).with
       --color=WHITE
       --font=sans10
@@ -35,9 +43,11 @@ main:
   display.draw
   
   MSG.size.repeat: | i |
-    c := MSG[i .. i + 1]
-    letter.text = c
-    display.draw
-    sleep --ms=1000
+    char := MSG[i]
+    if char:  // Skip for UTF-8 trailing bytes.
+      c := "$(%c char)"
+      letter.text = c
+      display.draw
+      sleep --ms=1000
   letter.text = ""
   display.draw
