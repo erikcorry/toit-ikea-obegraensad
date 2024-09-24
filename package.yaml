@@ -1,4 +1,4 @@
-name: ikea_obegraensad
+name: obegraensad
 description: Code to drive a hacked Ikea Obegränsad display from Toit
 dependencies:
   pixel_display:

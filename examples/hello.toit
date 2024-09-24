@@ -4,7 +4,7 @@
 
 import font show Font
 import gpio
-import ikea-obegraensad.driver as ikea
+import obegraensad
 import pixel-display show *
 import pixel-display.texture show TEXT-TEXTURE-ALIGN-CENTER
 import pixel-display.two_color show *
@@ -25,10 +25,10 @@ main:
   //device := bus.device --cs=(gpio.Pin LATCH) --frequency=20_000
   // This might work.  TODO: We need to pull the enable pin low
   // to activate the chip.
-  //driver := ikea.Driver device
+  //driver := obegraensad.Driver device
   // For now we use a null driver which just writes pixels to the
   // console.  Test with `jag run -d host examples/hello.toit`.
-  driver := ikea.Driver
+  driver := obegraensad.Driver
   display := TwoColorPixelDisplay driver
   display.background=BLACK
 
@@ -41,7 +41,7 @@ main:
   letter := display.text context 8 12 ""
 
   display.draw
-  
+
   MSG.size.repeat: | i |
     char := MSG[i]
     if char:  // Skip for UTF-8 trailing bytes.
