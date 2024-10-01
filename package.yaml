@@ -1,6 +1,6 @@
 name: obegraensad
-description: Code to drive a hacked Ikea Obegränsad display from Toit
+description: Code to drive a hacked Ikea Obegränsad display from Toit.
 dependencies:
   pixel_display:
     url: github.com/toitware/toit-pixel-display
-    version: ^1.7.1
+    version: ^2.9.0

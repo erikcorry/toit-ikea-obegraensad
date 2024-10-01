@@ -4,50 +4,59 @@
 
 import font show Font
 import gpio
-import obegraensad
+import obegraensad as ikea
 import pixel-display show *
-import pixel-display.texture show TEXT-TEXTURE-ALIGN-CENTER
 import pixel-display.two_color show *
-import spi
+import system
 
 // Replace with correct pins.
-CLOCK ::= 2
-DATA ::= 3
-LATCH ::= 4
+CLA ::= 27
+CLK ::= 26
+DATA ::= 33
+EN := 32
 
 MSG ::= "Hello, world!"
 
+with-driver [block]:
+  if system.platform == system.PLATFORM-FREERTOS:
+    cla := gpio.Pin CLA
+    clk := gpio.Pin CLK
+    data := gpio.Pin DATA
+    en := gpio.Pin EN
+    driver := ikea.Driver --cla=cla --clk=clk --data=data --en=en
+    try:
+      block.call driver
+    finally:
+      driver.close
+      en.close
+      data.close
+      clk.close
+      cla.close
+  else:
+    driver := ikea.Driver
+    try:
+      block.call driver
+    finally:
+      driver.close
+
 main:
-  sans10 := Font.get "sans10"
-  //bus := spi.Bus --clock=(gpio.Pin CLOCK) --mosi=(gpio.Pin DATA)
-  // Guess a low frequency will work, but how fast can the chip
-  // actually go?
-  //device := bus.device --cs=(gpio.Pin LATCH) --frequency=20_000
-  // This might work.  TODO: We need to pull the enable pin low
-  // to activate the chip.
-  //driver := obegraensad.Driver device
-  // For now we use a null driver which just writes pixels to the
-  // console.  Test with `jag run -d host examples/hello.toit`.
-  driver := obegraensad.Driver
-  display := TwoColorPixelDisplay driver
-  display.background=BLACK
+  with-driver: | driver/ikea.Driver |
+    sans10 := Font.get "sans10"
+    display := PixelDisplay.two-color driver --portrait=true
+    display.background = WHITE
 
-  // If it is rotated wrong, experiment with --landscape and --inverted.
-  context := (display.context --no-landscape).with
-      --color=WHITE
-      --font=sans10
-      --alignment=TEXT-TEXTURE-ALIGN-CENTER
+    // If it is rotated wrong, experiment with --landscape and --inverted.
+    text := Label --x=8 --y=13 --text="" --font=sans10 --alignment=ALIGN-CENTER --color=BLACK
+    display.add text
 
-  letter := display.text context 8 12 ""
+    display.draw
 
-  display.draw
-
-  MSG.size.repeat: | i |
-    char := MSG[i]
-    if char:  // Skip for UTF-8 trailing bytes.
-      c := "$(%c char)"
-      letter.text = c
-      display.draw
-      sleep --ms=1000
-  letter.text = ""
-  display.draw
+    MSG.size.repeat: | i |
+      char := MSG[i]
+      if char:  // Skip for UTF-8 trailing bytes.
+        c := "$(%c char)"
+        text.text = c
+        display.draw
+        sleep --ms=1000
+    text.text = ""
+    display.draw
